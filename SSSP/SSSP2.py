@@ -14,7 +14,7 @@ def group(lst, n):
     return zip(*[lst[i::n] for i in range(n)])
 
 
-def mapper1(x):
+def mapper(x):
     node_id, node = x
     yield x
     d = node.distance_from_s
@@ -22,20 +22,26 @@ def mapper1(x):
         yield m.destination, (node.node_id if d < inf else None, d + m.weight)
 
 
-def mapper2(x):
-    m, distances_node = x[0], x[1]
-    d_min = inf
-    vertex_from = None
-    M = None
-    for d in distances_node:
-        if len(d) == 2 and d[1] < d_min:
-            d_min = d[1]
-            vertex_from = d[0]
-        elif len(d) != 2:
-            M: Node = d
-    M = Node(M[0], min([d_min, M.distance_from_s]), vertex_from if d_min < M.distance_from_s else M.vertex_from,
-             M.adjList)
-    return m, M
+def reducer(x, y):
+    if type(x) == tuple and type(y) == tuple:
+        return x if x[1] < y[1] else y
+    else:
+        if type(x) == tuple and not type(y) == tuple:
+            y: Node
+            x: tuple
+            return Node(
+                    y.node_id,
+                    y.distance_from_s if x[1] > y.distance_from_s else x[1],
+                    y.vertex_from if x[1] > y.distance_from_s else x[0],
+                    y.adjList)
+        if type(y) == tuple and not type(x) == tuple:
+            y: tuple
+            x: Node
+            return Node(
+                    x.node_id,
+                    x.distance_from_s if y[1] > x.distance_from_s else y[1],
+                    x.vertex_from if y[1] > x.distance_from_s else y[0],
+                    x.adjList)
 
 
 def single_source_shortest_paths(source_node='A', file_name='simple_graph.txt'):
@@ -76,9 +82,15 @@ def single_source_shortest_paths(source_node='A', file_name='simple_graph.txt'):
 
     start_time = time.time()
     for _ in range(6):
-        tuples = tuples.flatMap(mapper1)  # flapMap for multiple return values
-        tuples = tuples.groupByKey()  # .map(lambda x: (x[0], list(x[1])))
-        tuples = tuples.map(mapper2)
+        tuples = tuples.flatMap(mapper)  # flapMap for multiple return values
+        print('after map')
+        for t in tuples.collect():
+            print(t)
+
+        tuples = tuples.reduceByKey(reducer)
+        print('after reduce')
+        for t in tuples.collect():
+            print(t)
 
     total_time = time.time() - start_time
     print(f'Done in {total_time} seconds.')

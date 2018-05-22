@@ -70,6 +70,6 @@ def single_source_shortest_paths(source_node='A', file_name='simple_graph.txt'):
 
 if __name__ == '__main__':
     start_time = time.time()
-    single_source_shortest_paths(file_name='Provan.txt', source_node='A')
+    single_source_shortest_paths()
     total_time = time.time() - start_time
     print(f'Done in {total_time} seconds.')
