@@ -14,7 +14,7 @@ def group(lst, n):
     return zip(*[lst[i::n] for i in range(n)])
 
 
-def mapper1(x):
+def mapper(x):
     node_id, node = x
     yield x
     d = node.distance_from_s
@@ -22,18 +22,16 @@ def mapper1(x):
         yield m.destination, d + m.weight
 
 
-def mapper2(x):
-    m, distances_node = x[0], x[1]
-    d_min = inf
-    M = None
-    for d in distances_node:
-        if isinstance(d, float) and d < d_min:
-            d_min = d
-        elif not isinstance(d, float):
-            M: Node = d
-
-    M = Node(M[0], min([d_min, M.distance_from_s]), M.adjList)
-    return m, M
+def reducer(x, y):
+    if type(x) == float and type(y) == float:
+        return x if x < y else y
+    else:
+        if type(x) == float and not type(y) == float:
+            y: Node
+            return Node(y.node_id, y.distance_from_s if x > y.distance_from_s else x, y.adjList)
+        if type(y) == float and not type(x) == float:
+            x: Node
+            return Node(x.node_id, x.distance_from_s if y > x.distance_from_s else y, x.adjList)
 
 
 def single_source_shortest_paths(source_node='A', file_name='simple_graph.txt'):
@@ -59,31 +57,19 @@ def single_source_shortest_paths(source_node='A', file_name='simple_graph.txt'):
             list_ += n.adjList
         return node_id, Node(node_id, inf if node_id != source_node else 0, list_)
 
-    tuples = tuples.flatMap(pre_processing1).groupByKey().map(pre_processing2)  # .map(lambda x: (x[0], list(x[1])))
+    tuples = tuples.flatMap(pre_processing1).groupByKey().map(pre_processing2)
 
-    # print('input tuples')
-    # g = Graph()
-    # for t in tuples.collect():
-    #     print(t)
-    #     from_ = t[0]
-    #     for destination in t[1].adjList:
-    #         to_ = destination.destination
-    #         label = destination.weight
-    #         g.add_edge(from_, to_, label=label)
-    # g.write()
-
-    start_time = time.time()
     for _ in range(6):
-        tuples = tuples.flatMap(mapper1)  # flapMap for multiple return values
-        tuples = tuples.groupByKey()  # .map(lambda x: (x[0], list(x[1])))
-        tuples = tuples.map(mapper2)
+        tuples = tuples.flatMap(mapper)  # flapMap for multiple return values
+        tuples = tuples.reduceByKey(reducer)
 
-    total_time = time.time() - start_time
-    print(f'Done in {total_time} seconds.')
     print('Results:')
     for t in tuples.collect():
         print(t)
 
 
 if __name__ == '__main__':
-    single_source_shortest_paths()
+    start_time = time.time()
+    single_source_shortest_paths(file_name='Provan.txt', source_node='A')
+    total_time = time.time() - start_time
+    print(f'Done in {total_time} seconds.')
