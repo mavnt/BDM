@@ -1,5 +1,4 @@
 # coding=utf-8
-import time
 from collections import namedtuple
 from math import inf
 from operator import add
@@ -67,33 +66,12 @@ def single_source_shortest_paths(source_node='A', file_name='simple_graph.txt'):
             list_ += n.adjList
         return node_id, Node(node_id, inf if node_id != source_node else 0, None, list_)
 
-    tuples = tuples.flatMap(pre_processing1).groupByKey().map(pre_processing2)  # .map(lambda x: (x[0], list(x[1])))
+    tuples = tuples.flatMap(pre_processing1).groupByKey().map(pre_processing2)
 
-    # print('input tuples')
-    # g = Graph()
-    # for t in tuples.collect():
-    #     print(t)
-    #     from_ = t[0]
-    #     for destination in t[1].adjList:
-    #         to_ = destination.destination
-    #         label = destination.weight
-    #         g.add_edge(from_, to_, label=label)
-    # g.view()
-
-    start_time = time.time()
     for _ in range(6):
-        tuples = tuples.flatMap(mapper)  # flapMap for multiple return values
-        print('after map')
-        for t in tuples.collect():
-            print(t)
-
+        tuples = tuples.flatMap(mapper)
         tuples = tuples.reduceByKey(reducer)
-        print('after reduce')
-        for t in tuples.collect():
-            print(t)
 
-    total_time = time.time() - start_time
-    print(f'Done in {total_time} seconds.')
     print('Results:')
     for t in tuples.collect():
         print(t)

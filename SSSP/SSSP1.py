@@ -1,5 +1,4 @@
 # coding=utf-8
-import time
 from collections import namedtuple
 from math import inf
 from operator import add
@@ -60,7 +59,7 @@ def single_source_shortest_paths(source_node='A', file_name='simple_graph.txt'):
     tuples = tuples.flatMap(pre_processing1).groupByKey().map(pre_processing2)
 
     for _ in range(6):
-        tuples = tuples.flatMap(mapper)  # flapMap for multiple return values
+        tuples = tuples.flatMap(mapper)
         tuples = tuples.reduceByKey(reducer)
 
     print('Results:')
@@ -69,7 +68,4 @@ def single_source_shortest_paths(source_node='A', file_name='simple_graph.txt'):
 
 
 if __name__ == '__main__':
-    start_time = time.time()
     single_source_shortest_paths()
-    total_time = time.time() - start_time
-    print(f'Done in {total_time} seconds.')
