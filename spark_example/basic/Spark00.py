@@ -3,7 +3,7 @@ from pyspark import SparkContext
 
 
 def main():
-    sc = SparkContext('local[4]', 'WordCount')
+    sc = SparkContext("local[4]", "WordCount")
     sc.setLogLevel("WARN")
     path0 = "Spark00.py"
     path1 = "Spark01.py"
@@ -16,5 +16,5 @@ def main():
         print(k, result[k])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
